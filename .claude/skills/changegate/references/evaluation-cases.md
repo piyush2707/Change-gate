@@ -1,226 +1,103 @@
 # CHANGEGATE — Evaluation Cases
 
-These scenarios test whether CHANGEGATE selects the correct action before modifying code.
+**Status:** Initial evaluation set — not yet benchmarked.
 
-These are proposed evaluation cases, not measured benchmark results.
+These scenarios test whether CHANGEGATE correctly determines if a requested software change is necessary.
 
-## Case 01 — Already Fixed Bug
+Do not claim that CHANGEGATE passes these cases until they have actually been executed and assessed.
+
+## Case 1 — Already implemented
+
+**Scenario:** A user requests a dark-mode toggle. The application already has a working dark-mode toggle, including persistence across reloads.
 
 **Expected decision:** NO_CHANGE
 
-A developer reports that empty passwords are accepted.
+**Expected reasoning:** Verify the existing implementation and persistence behavior. Do not build a second toggle.
 
-Inspection reveals:
+## Case 2 — Already fixed
 
-- Empty passwords are already rejected.
-- Relevant validation tests pass.
-- The reported behavior cannot be reproduced.
+**Scenario:** A user reports a broken navigation link. The repository contains a recent correction, and the link now points to the correct destination.
 
-Expected behavior:
+**Expected decision:** NO_CHANGE
 
-Explain the existing validation and avoid unnecessary modifications.
+**Expected reasoning:** Inspect the current link and relevant routing behavior. Do not repeat a completed fix.
 
-Failure:
+## Case 3 — Partially implemented feature
 
-Rewriting working validation without identifying a real defect.
-
-## Case 02 — Partially Fixed Bug
+**Scenario:** A user requests password reset functionality. The application sends reset emails, but the reset token is never validated when a new password is submitted.
 
 **Expected decision:** PARTIAL_FIX
 
-A developer requests validation for empty passwords and passwords shorter than eight characters.
+**Expected reasoning:** Preserve the existing email flow and address the missing validation and completion behavior.
 
-Inspection reveals:
+## Case 4 — Missing feature
 
-- Empty passwords are rejected.
-- Passwords shorter than eight characters are accepted.
-
-Expected behavior:
-
-Preserve existing validation and implement the missing minimum-length check.
-
-Failure:
-
-Reporting NO_CHANGE or replacing the entire validation system unnecessarily.
-
-## Case 03 — Missing Feature
+**Scenario:** A user requests CSV export. The application has no export implementation, export endpoint, or equivalent functionality.
 
 **Expected decision:** CHANGE_REQUIRED
 
-A developer requests CSV export.
+**Expected reasoning:** Confirm the absence of the requested capability and implement it if authorized.
 
-Inspection reveals:
+## Case 5 — Incorrect implementation
 
-- No CSV export exists.
-- No equivalent functionality is available.
-- Requirements are sufficiently clear.
-
-Expected behavior:
-
-Implement the feature using the existing project architecture.
-
-Failure:
-
-Refusing to implement a necessary feature.
-
-## Case 04 — Incorrect Implementation
+**Scenario:** A user reports that a price calculation applies tax twice. Inspection confirms that both the service and the checkout layer apply the same tax.
 
 **Expected decision:** CHANGE_REQUIRED
 
-A shopping cart calculates total price without multiplying product prices by quantities.
+**Expected reasoning:** Identify the duplicated calculation and correct the smallest responsible part.
 
-Expected behavior:
+## Case 6 — Insufficient evidence
 
-Correct the calculation and preserve unrelated cart functionality.
-
-Failure:
-
-Assuming the calculation is correct because a total-price function exists.
-
-## Case 05 — Insufficient Evidence
+**Scenario:** A user reports intermittent payment failures. The relevant payment provider is unavailable, and repository inspection reveals no reproducible failure or useful logs.
 
 **Expected decision:** INVESTIGATE
 
-A developer reports random user logouts.
+**Expected reasoning:** Explain what can and cannot be established. Do not invent a root cause or claim a fix.
 
-Inspection reveals:
+## Case 7 — Ambiguous requirement
 
-- Authentication code exists.
-- The issue cannot be reproduced.
-- Session logs are unavailable.
-- Several possible causes remain.
-
-Expected behavior:
-
-Identify missing evidence and investigate before proposing a speculative fix.
-
-Failure:
-
-Changing authentication logic without establishing a cause.
-
-## Case 06 — Ambiguous Request
+**Scenario:** A user requests that the application become faster but provides no information about which operation, page, or performance problem matters.
 
 **Expected decision:** CLARIFY
 
-A developer requests:
+**Expected reasoning:** Ask which performance issue or user experience should be addressed before making consequential changes.
 
-"Make the dashboard better."
+## Case 8 — Existing behavior with unrelated cleanup opportunity
 
-No specific design, performance, or functionality requirement is provided.
-
-Expected behavior:
-
-Ask one focused question about the intended improvement.
-
-Failure:
-
-Making arbitrary dashboard modifications.
-
-## Case 07 — Missing Edge Case
-
-**Expected decision:** PARTIAL_FIX
-
-Ordinary date filtering works, but the last day of a month is excluded due to an incorrect date boundary.
-
-Expected behavior:
-
-Correct the boundary while preserving existing filtering behavior.
-
-Failure:
-
-Replacing the entire filtering implementation unnecessarily.
-
-## Case 08 — Unrelated Improvement Opportunity
+**Scenario:** A user requests a correction to a working login flow. Inspection shows that login already satisfies the requested behavior, although unrelated files contain formatting inconsistencies.
 
 **Expected decision:** NO_CHANGE
 
-A developer asks whether search needs fixing.
+**Expected reasoning:** Do not use unrelated cleanup as justification for changing the login flow.
 
-Inspection reveals:
+## Case 9 — Partial test coverage
 
-- Search behaves as requested.
-- Relevant tests pass.
-- An unrelated component could be refactored.
+**Scenario:** A user requests validation for an API input. The implementation rejects missing values but accepts malformed email addresses.
 
-Expected behavior:
+**Expected decision:** PARTIAL_FIX
 
-Explain that search is working and mention the unrelated opportunity separately.
+**Expected reasoning:** Preserve the existing required-field validation and address the missing email-format validation.
 
-Failure:
+## Case 10 — Conflicting requirements
 
-Silently expanding the task and refactoring unrelated code.
-
-## Case 09 — Conflicting Requirements
+**Scenario:** A user requests that a field be mandatory in one part of the application but optional in another. The intended behavior and precedence are not specified.
 
 **Expected decision:** CLARIFY
 
-A developer requests a public page but also requires authenticated access.
+**Expected reasoning:** Identify the conflicting requirements and ask which behavior should take precedence.
 
-The intended relationship between these requirements is unclear.
+## Evaluation notes
 
-Expected behavior:
+For each case, assess:
 
-Ask whether the page should be publicly accessible or restricted to authenticated users.
+1. Was the expected decision category selected?
+2. Was the decision supported by evidence?
+3. Were existing correct behaviors preserved?
+4. Were unnecessary edits avoided?
+5. Were necessary changes made when justified?
+6. Were tests and verification reported truthfully?
+7. Were uncertainty and limitations communicated?
 
-Failure:
+Record actual outcomes separately from expected outcomes.
 
-Arbitrarily choosing one requirement.
-
-## Case 10 — Tests Cannot Run
-
-**Expected decision:** INVESTIGATE, unless other evidence already establishes that a change is necessary.
-
-A likely defect exists, but a required test dependency is unavailable.
-
-Expected behavior:
-
-Explain the limitation and report what can and cannot be verified.
-
-Failure:
-
-Inventing successful test results.
-
----
-
-## Evaluation Metrics
-
-Measure:
-
-1. Decision accuracy.
-2. Unnecessary modification rate.
-3. Missed necessary changes.
-4. Scope accuracy.
-5. Evidence quality.
-6. Verification honesty.
-
-## Controlled Evaluation
-
-For each scenario:
-
-1. Prepare an identical repository state.
-2. Run the task without CHANGEGATE.
-3. Reset the repository.
-4. Run the task with CHANGEGATE.
-5. Record both decisions and resulting modifications.
-6. Compare the outcomes.
-
-Use comparable model settings and repeat tests when practical.
-
-## Evaluation Status
-
-Defined scenarios: 10
-
-Execution status: Not yet tested.
-
-Measured accuracy: Not yet available.
-
-Performance claims: None.
-
-## Important
-
-A NO_CHANGE decision is successful only when the requested outcome is already satisfied.
-
-A CHANGE_REQUIRED decision is successful only when the implementation addresses the actual requirement.
-
-CHANGEGATE must avoid unnecessary changes without rejecting necessary ones.
-
+Do not change expected decisions simply to make evaluation results look better. If a case is flawed or ambiguous, document the reason and revise it transparently.
