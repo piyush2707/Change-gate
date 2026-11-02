@@ -1,125 +1,176 @@
+
 # CHANGEGATE — Decision Rules
 
-These rules define how CHANGEGATE classifies whether a requested software change is necessary.
+## Purpose
 
-## 1. Core principle
+Determine whether a requested software change is necessary using repository evidence.
 
-Do not assume that a requested change is necessary merely because the user requested it.
+The goal is not to minimize edits at all costs. The goal is to make the smallest correct change while preserving working behavior.
 
-Inspect the relevant implementation and available evidence before deciding.
+## 1. Decision workflow
 
-The goal is to make the smallest correct change—not to avoid changes at all costs.
+Follow this sequence:
 
-## 2. The five decision categories
+1. Understand the requested outcome.
+2. Identify the relevant requirements.
+3. Inspect the existing implementation.
+4. Examine available tests and evidence.
+5. Compare actual behavior with expected behavior.
+6. Identify uncertainty or ambiguity.
+7. Select one primary decision.
+8. Explain the decision.
+9. Act when appropriate and authorized.
+10. Verify actual results.
+
+Never skip inspection simply because a solution seems obvious.
+
+## 2. The five decisions
 
 ### NO_CHANGE
 
-Use when the requested behavior already works correctly.
+Use when the requested outcome already works and available evidence supports that conclusion.
 
 Requirements:
-- Inspect the relevant implementation.
-- Check available tests or other relevant evidence.
-- Confirm that the requested outcome is already satisfied.
-- Explain why additional changes are unnecessary.
+- Inspect relevant implementation and behavior.
+- Examine applicable tests or other evidence.
+- Explain why the requested outcome is already satisfied.
+- Report limitations in verification.
 
-Do not modify files merely to demonstrate activity.
+Do not modify code merely to demonstrate activity.
+
+A passing test alone does not prove every possible case works.
 
 ### PARTIAL_FIX
 
-Use when some of the requested behavior already exists, but a specific gap remains.
+Use when some requested behavior works but one or more requirements remain incomplete or incorrect.
 
 Requirements:
 - Identify what already works.
-- Identify what is incomplete or incorrect.
-- Isolate the smallest remaining change.
-- Preserve correct existing behavior.
+- Identify what remains incomplete.
+- Locate the relevant implementation.
+- Make the smallest appropriate correction.
+- Preserve working behavior.
 
-Do not rewrite a working implementation unnecessarily.
+Never classify a partially completed fix as NO_CHANGE merely because part of it works.
 
 ### CHANGE_REQUIRED
 
-Use when evidence establishes that the requested behavior is missing, broken, or incorrect.
+Use when the requested behavior is missing or the existing implementation demonstrably fails a requirement.
 
 Requirements:
-- Identify the specific failure or missing behavior.
-- Explain why the existing implementation does not satisfy the request.
-- Implement the smallest appropriate correction when authorized.
+- Establish expected behavior.
+- Identify actual behavior.
+- Explain why a modification is necessary.
+- Implement the smallest suitable change when authorized.
 - Verify the result using available checks.
+
+Avoid unrelated refactoring.
 
 ### INVESTIGATE
 
-Use when the available evidence is insufficient to make a reliable decision.
+Use when available evidence is insufficient for a reliable decision.
 
 Examples:
-- Relevant files cannot be accessed.
-- A required dependency or service is unavailable.
-- The behavior depends on an external system that cannot be inspected.
-- Available tests do not establish the actual behavior.
+- The reported behavior cannot be reproduced.
+- Important files or dependencies are unavailable.
+- Runtime logs are missing.
+- An external service cannot be inspected.
+- Multiple possible causes remain.
 
 Requirements:
 - State what was inspected.
-- Identify the missing evidence.
-- Perform safe, relevant investigation when possible.
-- Do not present assumptions as confirmed findings.
+- Identify missing evidence.
+- Perform safe, relevant investigation where possible.
+- Avoid speculative fixes.
+- Explain what is needed to proceed.
+
+INVESTIGATE is not a permanent refusal to make changes. Continue when useful evidence becomes available.
 
 ### CLARIFY
 
-Use when the request has multiple materially different interpretations or lacks a necessary requirement.
+Use when ambiguity materially affects the correct implementation.
+
+Examples:
+- Conflicting requirements.
+- Multiple plausible interpretations.
+- Missing acceptance criteria.
+- Unclear expected behavior.
+- A consequential choice requiring user preference.
 
 Requirements:
 - Identify the ambiguity.
-- Explain why it affects the implementation.
-- Ask the smallest necessary clarification.
+- Explain why it matters.
+- Ask one focused question.
 - Do not silently choose a consequential interpretation.
 
-## 3. Evidence hierarchy
+Do not ask questions that repository inspection can resolve.
+
+## 3. Evidence standards
 
 Prefer direct evidence over assumptions.
 
-Use evidence in roughly this order:
+Strong evidence:
+- Reproduced behavior.
+- Relevant tests actually executed.
+- Direct inspection of implementation.
+- Measured runtime results.
+- Verified application output.
 
-1. Reproduced behavior or a reliable failing test.
-2. Relevant implementation and its execution path.
-3. Existing tests and their actual results.
-4. Configuration, dependencies, and documented contracts.
-5. Logs, error messages, and available runtime information.
-6. Documentation and comments.
-7. Inference or assumptions.
+Supporting evidence:
+- Documentation.
+- Configuration.
+- Project history.
+- Relevant code comments.
+- Similar implementations.
 
-Documentation and comments can be outdated. Verify important claims against the implementation when possible.
+Insufficient evidence:
+- Guesswork.
+- Unverified claims.
+- Assumptions based on filenames.
+- Tests that were never executed.
+- Conclusions based only on the existence of a function.
+
+Documentation and comments may be outdated. Verify important claims against implementation when possible.
+
+Never present weak evidence as definitive proof.
 
 ## 4. Partial-fix discipline
 
-A partially implemented feature must not automatically be classified as complete or broken.
+For partially implemented behavior, determine:
 
-Determine:
-- Which requirements are already satisfied?
+- Which requirements are satisfied?
 - Which requirements remain unsatisfied?
-- Is the remaining gap relevant to the user's request?
+- Is the remaining gap relevant to the request?
 - Can the gap be fixed without replacing working behavior?
 
-Classify as PARTIAL_FIX when meaningful work remains and the existing implementation already satisfies part of the request.
+Preserve completed work and address only the remaining gap.
 
-## 5. Verification discipline
+## 5. Scope control
 
-After making a change:
+Before editing, ask:
 
-- Run relevant available tests or checks.
-- Inspect the resulting diff.
-- Confirm that the change addresses the identified gap.
-- Check for unintended changes when practical.
+- Is this change necessary for the requested outcome?
+- Does it preserve existing behavior?
+- Is there a smaller suitable change?
+- Does it introduce unrelated refactoring?
+- Does it add unnecessary dependencies?
+- Does it change public interfaces without need?
 
-Never claim a test passed unless it was actually executed and passed.
+Report unrelated improvement opportunities separately.
 
-If verification cannot be performed, state that limitation clearly.
+## 6. Verification
 
-## 6. Scope control
+After modifying code:
 
-- Do not refactor unrelated code.
-- Do not add dependencies without a demonstrated need.
-- Do not change public interfaces unnecessarily.
-- Do not replace working implementations simply because another approach looks cleaner.
-- Do not expand the request into unrelated improvements.
+1. Inspect the resulting diff.
+2. Run relevant tests or checks when available.
+3. Check the requested behavior.
+4. Look for unintended changes.
+5. Report what was actually verified.
+
+If a test cannot run, state that explicitly.
+
+Never invent test results or claim complete verification when only part of the behavior was tested.
 
 ## 7. Final decision report
 
@@ -129,7 +180,15 @@ Report:
 - **Evidence:** what was actually inspected or tested.
 - **Finding:** what already works and what does not.
 - **Action:** what was changed, or why no change was made.
-- **Verification:** checks performed and their actual results.
+- **Verification:** checks performed and actual results.
 - **Limitations:** anything important that remains unverified.
 
-A concise, evidence-backed explanation is better than a confident but unsupported conclusion.
+## Final rule
+
+CHANGEGATE must never optimize for fewer edits at the expense of correctness.
+
+A necessary change must not be rejected merely to avoid modifying code.
+
+An unnecessary change must not be made merely because an implementation opportunity exists.
+
+**Choose the action that best satisfies the user's actual requested outcome.**
