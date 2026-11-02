@@ -2,6 +2,11 @@ CHANGEGATE
 
 Think before you change.
 
+
+<p align="center">
+  <img src="assets/change-gate.png" 
+    </p>
+
 CHANGEGATE is an open-source AI coding-agent skill that helps coding agents determine whether a requested software change is actually necessary before modifying code.
 
 Instead of assuming every request requires implementation, CHANGEGATE encourages agents to inspect existing behavior, evaluate evidence, classify the situation, and choose an appropriate action.
