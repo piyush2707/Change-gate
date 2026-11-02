@@ -1,8 +1,9 @@
+
 # CHANGEGATE — Evaluation Cases
 
-These scenarios are designed to test whether CHANGEGATE correctly determines if a requested change is necessary.
-
 **Status:** Initial evaluation set — not yet benchmarked.
+
+These scenarios test whether CHANGEGATE correctly determines if a requested software change is necessary.
 
 Do not claim that CHANGEGATE passes these cases until they have actually been executed and assessed.
 
