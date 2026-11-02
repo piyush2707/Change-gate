@@ -134,8 +134,9 @@ However, if validation works only for some cases, CHANGEGATE should identify the
 
 This distinction is central to the project.
 
-Project Structure
+## Project Structure
 
+```text
 Change-gate/
 ├── README.md
 ├── LICENSE
@@ -166,6 +167,9 @@ Change-gate/
 │
 └── evaluations/
     └── README.md
+```
+
+The root `skills/` directory is the canonical skill distribution. The `.claude/` and `.agents/` directories provide agent-specific installation copies.
 
 The root "skills/" directory is the canonical skill distribution. The ".claude/" and ".agents/" directories provide agent-specific installation copies.
 
